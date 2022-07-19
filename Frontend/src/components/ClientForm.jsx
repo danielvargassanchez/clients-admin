@@ -12,12 +12,19 @@ const ClientForm = () => {
       .required("Campo requerido")
       .min(4, "Mínimo 4 caracteres")
       .max(20, "Máximo 20 caracteres"),
-    email: "",
-    phone: "",
+    email: Yup.string().required("Campo requerido").email("Correo invalido"),
+    phone: Yup.number()
+    .integer("Número inválido")
+    .positive("Número inválido")
+    .typeError("Número inválido")
+    .min(10, "Mínimo 10 números")
+    .max(10, "Máximo 10 números"),
     notes: "",
   });
 
-  const handleSubmit = (value) => {};
+  const handleSubmit = (value) => {
+    
+  };
   return (
     <div className="bg-white mt-10 px-5 py-10 rounded-md shadow-md md:w-3/4 mx-auto">
       <h1 className="text-gray-600 font-bold text-xl uppercase text-center">
@@ -67,6 +74,9 @@ const ClientForm = () => {
                   className="mt-2 block w-full p-3 bg-gray-50"
                   placeholder="Empresa del cliente"
                 />
+                {errors.company && touched.company ? (
+                  <Error>{errors.company}</Error>
+                ) : null}
               </div>
 
               <div className="mb-4 ">
@@ -80,6 +90,9 @@ const ClientForm = () => {
                   className="mt-2 block w-full p-3 bg-gray-50"
                   placeholder="Email del cliente"
                 />
+                {errors.email && touched.email ? (
+                  <Error>{errors.email}</Error>
+                ) : null}
               </div>
 
               <div className="mb-4 ">
@@ -93,6 +106,9 @@ const ClientForm = () => {
                   className="mt-2 block w-full p-3 bg-gray-50"
                   placeholder="Teléfono del cliente"
                 />
+                {errors.phone && touched.phone ? (
+                  <Error>{errors.phone}</Error>
+                ) : null}
               </div>
 
               <div className="mb-4 ">
