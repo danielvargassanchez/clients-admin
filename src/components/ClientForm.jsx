@@ -2,7 +2,10 @@ import { Formik, Form, Field } from "formik";
 import React from "react";
 import * as Yup from "yup";
 import Error from "./Error";
-const ClientForm = () => {
+import { useNavigate } from "react-router-dom";
+
+const ClientForm = ({ client }) => {
+  const navigate = useNavigate();
   const newClientSchema = Yup.object().shape({
     name: Yup.string()
       .required("Campo requerido")
@@ -14,32 +17,61 @@ const ClientForm = () => {
       .max(20, "Máximo 20 caracteres"),
     email: Yup.string().required("Campo requerido").email("Correo invalido"),
     phone: Yup.number()
-    .integer("Número inválido")
-    .positive("Número inválido")
-    .typeError("Número inválido")
-    .min(10, "Mínimo 10 números")
-    .max(10, "Máximo 10 números"),
+      .integer("Número inválido")
+      .positive("Número inválido")
+      .typeError("Número inválido")
+      .min(1111111111, "Mínimo 10 números")
+      .max(9999999999, "Máximo 12 números"),
     notes: "",
   });
 
-  const handleSubmit = (value) => {
-    
+  const handleSubmit = async (value) => {
+    try {
+      const url = `${import.meta.env.VITE_BASE_URL}/clients`;
+
+      if (client.id) {
+        const response = await fetch(`${url}/${client.id}`, {
+          method: "PUT",
+          body: JSON.stringify(value),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        await response.json();
+        navigate("/clients");
+        return;
+      }
+      const response = await fetch(url, {
+        method: "POST",
+        body: JSON.stringify(value),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      await response.json();
+      navigate("/clients");
+    } catch (error) {
+      console.log(error);
+    }
   };
+
   return (
     <div className="bg-white mt-10 px-5 py-10 rounded-md shadow-md md:w-3/4 mx-auto">
       <h1 className="text-gray-600 font-bold text-xl uppercase text-center">
-        Agrager cliente
+        {client.name ? "Editar cliente" : "Agregar cliente"}
       </h1>
       <Formik
         initialValues={{
-          name: "",
-          company: "",
-          email: "",
-          phone: "",
-          notes: "",
+          name: client?.name ?? "",
+          company: client?.company ?? "",
+          email: client?.email ?? "",
+          phone: client?.phone ?? "",
+          notes: client?.notes ?? "",
         }}
-        onSubmit={(values) => {
-          handleSubmit(values);
+        enableReinitialize={true}
+        onSubmit={async (values, { resetForm }) => {
+          await handleSubmit(values);
+          resetForm();
         }}
         validationSchema={newClientSchema}
       >
@@ -121,13 +153,13 @@ const ClientForm = () => {
                   type="text"
                   id="notes"
                   className="mt-2 block w-full p-3 bg-gray-50 h-40"
-                  placeholder="Teléfono del cliente"
+                  placeholder="Notas"
                 />
               </div>
 
               <input
                 type="submit"
-                value="Agregar cliente"
+                value={client.name ? "Editar cliente" : "Agregar cliente"}
                 className="mt-5 w-full bg-blue-800 p-3 text-white uppercase font-bold text-lg cursor-pointer"
               />
             </Form>
@@ -136,6 +168,10 @@ const ClientForm = () => {
       </Formik>
     </div>
   );
+};
+
+ClientForm.defaultProps = {
+  client: {},
 };
 
 export default ClientForm;
